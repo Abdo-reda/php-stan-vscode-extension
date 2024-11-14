@@ -1,0 +1,57 @@
+{
+  "name": "php-stan",
+  "displayName": "php-stan",
+  "description": "Analyse your php code instantly, and catch errors before they happen.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "php-stan.turtle",
+        "title": "Turtle 🐢"
+      },
+      {
+        "command": "php-stan.tellTime",
+        "title": "Tell the fucking TIME ERROR"
+      }
+    ],
+    "configuration": {
+      "title": "PhpStan",
+      "properties": {
+        "php-stan.level": {
+          "type": "number",
+          "default": 5,
+          "minimum": 0,
+          "maximum": 9,
+          "description": "Analyse level used (-l). [Reference](https://phpstan.org/user-guide/rule-levels)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.10.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.13.0",
+    "typescript": "^5.6.3",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
