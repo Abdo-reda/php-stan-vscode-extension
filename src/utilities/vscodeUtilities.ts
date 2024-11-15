@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { exec } from "child_process";
 
 // export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
 //   vscode.window.withProgress(
@@ -50,3 +51,36 @@ export async function fileExistsAsync(uri: vscode.Uri): Promise<boolean> {
     return false;
   }
 }
+
+export function runCommandInBackground(
+  command: string,
+  workingDirectory: string|undefined = undefined
+) {
+  exec(command, {cwd: workingDirectory} ,(error, stdout, stderr) => {
+    if (error) {
+      vscode.window.showErrorMessage(`Error: ${error.message}`);
+      return;
+    }
+    if (stderr) {
+      vscode.window.showWarningMessage(`Warning: ${stderr}`);
+      return;
+    }
+    vscode.window.showInformationMessage(`Success: ${stdout}`); //TODO: remove later
+  });
+}
+
+export function getActiveDirectory(): string | undefined {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    
+    if (workspaceFolders && workspaceFolders.length > 0) {
+        return workspaceFolders[0].uri.fsPath;
+    }
+    
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        return vscode.Uri.joinPath(activeEditor.document.uri, "..").fsPath;
+    }
+    
+    return undefined; // No active workspace or file
+}
+

@@ -18,8 +18,8 @@
         "title": "Turtle 🐢"
       },
       {
-        "command": "php-stan.tellTime",
-        "title": "Tell the fucking TIME ERROR"
+        "command": "php-stan.analyseRanaFile",
+        "title": "Analyse a file"
       }
     ],
     "configuration": {

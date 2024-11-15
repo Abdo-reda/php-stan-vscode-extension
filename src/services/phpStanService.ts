@@ -1,16 +1,34 @@
-import { fileExistsAsync } from "../utilities/vscodeUtilities";
+import { fileExistsAsync, getActiveDirectory, runCommandInBackground } from "../utilities/vscodeUtilities";
 import { GithubService } from "./githubService";
 import * as vscode from "vscode";
 
 export class PhpStanService {
   private githubService = new GithubService();
+  private extensionPath: string = '';
 
-  async initPhpStan(path: string) {
-	await this.downloadLatestPharAsync(path);
+  async initPhpStan(extensionPath: string) {
+	this.extensionPath = extensionPath;
+	await this.downloadLatestPharAsync(this.extensionPath);
+  }
+
+  analyseWorkspace() {
+	const activeDirectory = getActiveDirectory();
+	if (!activeDirectory) {return;}
+	this.analyseFile(activeDirectory);
+  }
+
+  analyseFile(path: string) {
+	console.log(`PhpStan: ----- analyse ${path}`);
+	// runCommandInBackground(`php ${this.phpStanPath} analyse ${path}`);
+	runCommandInBackground(`pwd`);
+  }
+
+  get phpStanPath() {
+	return `${this.extensionPath}/phpstan.phar`;
   }
 
   async downloadLatestPharAsync(path: string) {
-    const filePath = `${path}/phpStan.phar`;
+    const filePath = `${path}/phpstan.phar`;
     const fileUri = vscode.Uri.file(filePath);
     var exists = await fileExistsAsync(fileUri);
 	if (exists) {
@@ -25,3 +43,5 @@ export class PhpStanService {
     vscode.window.showInformationMessage(`Successfully downloaded phpStan to ${filePath}`);
   }
 }
+
+

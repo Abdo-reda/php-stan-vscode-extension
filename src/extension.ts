@@ -18,8 +18,8 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello RANA');
 	});
 
-	const timeCommand = vscode.commands.registerCommand('php-stan.tellTime', () => {
-		vscode.window.showWarningMessage(`${Date.now().toLocaleString()}`);
+	const timeCommand = vscode.commands.registerCommand('php-stan.analyseRanaFile', () => {
+		phpStanService.analyseFile('src');
 	});
 
 	context.subscriptions.push(disposable, timeCommand);
