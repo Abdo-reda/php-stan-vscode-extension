@@ -1,14 +1,17 @@
 import { ExtensionConfigurations } from "../constants/configurationEnum";
-import { fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground } from "../utilities/vscodeUtilities";
+import { IErrorOutput } from "../interfaces/errorOutputInterface";
+import { addDiagnostic, fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground } from "../utilities/vscodeUtilities";
 import { GithubService } from "./githubService";
 import * as vscode from "vscode";
 
 export class PhpStanService {
   private githubService = new GithubService();
   private storagePath: vscode.Uri = vscode.Uri.file("");
+  private diagCollection!: vscode.DiagnosticCollection;
 
-  async initPhpStan(storagePath: vscode.Uri) {
+  async initPhpStan(storagePath: vscode.Uri, diagCollection: vscode.DiagnosticCollection ) {
     this.storagePath = storagePath;
+    this.diagCollection = diagCollection;
     await this.downloadLatestPharAsync(this.phpStanPath);
   }
 
@@ -24,17 +27,11 @@ export class PhpStanService {
     const level = getConfiguration<number>(ExtensionConfigurations.LEVEL);
     console.log(`PhpStan: Analysing ${path}, Level ${level}`);
     runCommandInBackground(
-      `php ${this.phpStanPath.fsPath} analyse src -l ${level} --no-progress --no-ansi`, 
+      `php ${this.phpStanPath.fsPath} analyse src -l ${level} --no-progress --no-ansi --error-format=json`, 
       path, 
       this.onAnalysisError, 
       this.onAnalysisSuccess
     );
-    // runCommandInBackground(
-    //   `cd`, 
-    //   path, 
-    //   this.onAnalysisError, 
-    //   this.onAnalysisSuccess
-    // );
   }
 
   get phpStanPath() {
@@ -56,8 +53,14 @@ export class PhpStanService {
   }
 
   private onAnalysisError(output: string) {
-    console.log('----- on Analysis Error -----'); 
-    // vscode.window.showErrorMessage(`Analysis failed: ${output}`);
+    const errorOutput = JSON.parse(output) as IErrorOutput;
+    console.log('----- on Analysis Error -----', errorOutput); 
+    for (const [key, value] of Object.entries(errorOutput.files)) {
+      console.log('-- yoww', key, value)
+      value.messages.forEach(m => {
+        addDiagnostic(this.diagCollection, key, m.message, m.line);
+      });
+    }
   }
 
   private onAnalysisSuccess(output: string) {

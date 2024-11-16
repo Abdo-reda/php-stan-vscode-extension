@@ -19,7 +19,9 @@ import { ExtensionConfigurations } from "../constants/configurationEnum";
 
 const config = vscode.workspace.getConfiguration("php-stan");
 
-export function getConfiguration<T>(configuration: ExtensionConfigurations): T|undefined {
+export function getConfiguration<T>(
+  configuration: ExtensionConfigurations
+): T | undefined {
   return config.get<T>(configuration);
 }
 
@@ -61,15 +63,13 @@ export async function fileExistsAsync(uri: vscode.Uri): Promise<boolean> {
 
 export function runCommandInBackground(
   command: string,
-  workingDirectory: string|undefined = undefined,
+  workingDirectory: string | undefined = undefined,
   errorCallback: (output: string) => void = () => {},
-  successCallback: (output: string) => void = () => {},
+  successCallback: (output: string) => void = () => {}
 ) {
-  exec(command, {cwd: workingDirectory} ,(error, stdout, stderr) => {
+  exec(command, { cwd: workingDirectory }, (error, stdout, stderr) => {
     if (error) {
-      console.log("Error: ", error);
-      vscode.window.showErrorMessage(`Error: ${error.message}`);
-      errorCallback(error.message);
+      errorCallback(stdout);
       return;
     }
     if (stderr) {
@@ -80,18 +80,43 @@ export function runCommandInBackground(
   });
 }
 
+export function addDiagnostic(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, message: string, line: number) {
+  console.log('PhpStan: adding error diag', filePath, message, line);
+  const temp = vscode.Uri.file(filePath);
+  // const document = vscode.workspace.openTextDocument(filePath); //fix this TODO: fifxxixixi
+  const range = new vscode.Range(
+    line,
+    0,
+    line,
+    10,
+    // document.lineAt(line).range.end.character
+  ); 
+
+  const diagnostic = new vscode.Diagnostic(
+    range,
+    message,
+    vscode.DiagnosticSeverity.Warning 
+  );
+
+  diagnosticCollection.set(temp, [diagnostic]);
+}
+
 export function getActiveDirectory(): string | undefined {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    
-    if (workspaceFolders && workspaceFolders.length > 0) {
-        return workspaceFolders[0].uri.fsPath;
-    }
-    
-    const activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor) {
-        console.log("---- active editor", activeEditor.document.fileName, activeEditor.document.uri.fsPath);
-        return vscode.Uri.joinPath(activeEditor.document.uri, "..").fsPath;
-    }
-    
-    return undefined; 
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+
+  if (workspaceFolders && workspaceFolders.length > 0) {
+    return workspaceFolders[0].uri.fsPath;
+  }
+
+  const activeEditor = vscode.window.activeTextEditor;
+  if (activeEditor) {
+    console.log(
+      "---- active editor",
+      activeEditor.document.fileName,
+      activeEditor.document.uri.fsPath
+    );
+    return vscode.Uri.joinPath(activeEditor.document.uri, "..").fsPath;
+  }
+
+  return undefined;
 }

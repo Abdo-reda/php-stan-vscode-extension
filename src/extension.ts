@@ -6,9 +6,11 @@ const phpStanService = new PhpStanService();
 
 export function activate(context: vscode.ExtensionContext) {
 
-	phpStanService.initPhpStan(context.storageUri!);
+	const diagnosticCollection = vscode.languages.createDiagnosticCollection('temp');
+	phpStanService.initPhpStan(context.storageUri!, diagnosticCollection);
 
 	// showRanooon('testing message .....s.s.s.');
+
 
 	console.log('PhpStan: Congratulations, your extension "php-stan" is now active!');
 
