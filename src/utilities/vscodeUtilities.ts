@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { exec } from "child_process";
+import { ExtensionConfigurations } from "../constants/configurationEnum";
 
 // export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
 //   vscode.window.withProgress(
@@ -15,6 +16,12 @@ import { exec } from "child_process";
 //     }
 //   );
 // }
+
+const config = vscode.workspace.getConfiguration("php-stan");
+
+export function getConfiguration<T>(configuration: ExtensionConfigurations): T|undefined {
+  return config.get<T>(configuration);
+}
 
 export function showRanooon(
   message: string,
@@ -54,18 +61,22 @@ export async function fileExistsAsync(uri: vscode.Uri): Promise<boolean> {
 
 export function runCommandInBackground(
   command: string,
-  workingDirectory: string|undefined = undefined
+  workingDirectory: string|undefined = undefined,
+  errorCallback: (output: string) => void = () => {},
+  successCallback: (output: string) => void = () => {},
 ) {
   exec(command, {cwd: workingDirectory} ,(error, stdout, stderr) => {
     if (error) {
+      console.log("Error: ", error);
       vscode.window.showErrorMessage(`Error: ${error.message}`);
+      errorCallback(error.message);
       return;
     }
     if (stderr) {
       vscode.window.showWarningMessage(`Warning: ${stderr}`);
       return;
     }
-    vscode.window.showInformationMessage(`Success: ${stdout}`); //TODO: remove later
+    successCallback(stdout);
   });
 }
 
@@ -78,9 +89,9 @@ export function getActiveDirectory(): string | undefined {
     
     const activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
+        console.log("---- active editor", activeEditor.document.fileName, activeEditor.document.uri.fsPath);
         return vscode.Uri.joinPath(activeEditor.document.uri, "..").fsPath;
     }
     
-    return undefined; // No active workspace or file
+    return undefined; 
 }
-

@@ -4,11 +4,9 @@ import { showRanooon } from './utilities/vscodeUtilities';
 
 const phpStanService = new PhpStanService();
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
 
-	phpStanService.initPhpStan(context.extensionPath);
+	phpStanService.initPhpStan(context.storageUri!);
 
 	// showRanooon('testing message .....s.s.s.');
 
@@ -19,13 +17,11 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const timeCommand = vscode.commands.registerCommand('php-stan.analyseRanaFile', () => {
-		phpStanService.analyseFile('src');
+		phpStanService.analyseWorkspace();
 	});
 
 	context.subscriptions.push(disposable, timeCommand);
 }
 
 
-
-// This method is called when your extension is deactivated
 export function deactivate() {}

@@ -1,8 +1,9 @@
 {
   "name": "php-stan",
   "displayName": "php-stan",
+  "publisher": "nopoint",
   "description": "Analyse your php code instantly, and catch errors before they happen.",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -25,12 +26,21 @@
     "configuration": {
       "title": "PhpStan",
       "properties": {
+        "php-stan.approach": {
+          "type": "string",
+          "enum": [
+            "phar",
+            "composer"
+          ],
+          "default": "phar",
+          "description": "Approach used to download and execute php stan. Either phar file is used or its installed using composer. [Reference](https://phpstan.org/user-guide/getting-started#installation)"
+        },
         "php-stan.level": {
           "type": "number",
           "default": 5,
           "minimum": 0,
           "maximum": 9,
-          "description": "Analyse level used (-l). [Reference](https://phpstan.org/user-guide/rule-levels)"
+          "description": "Level used for analysis (-l). [Reference](https://phpstan.org/user-guide/rule-levels)"
         }
       }
     }
