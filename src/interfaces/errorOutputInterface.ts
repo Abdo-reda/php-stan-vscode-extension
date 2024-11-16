@@ -6,14 +6,15 @@ export interface IErrorOutput {
 	files: {
 	  [filePath: string]: {
 		errors: number;
-		messages: {
-		  message: string;
-		  line: number;
-		  ignorable: boolean;
-		  identifier: string;
-		}[];
+		messages: IErrorMessage[];
 	  };
 	};
 	errors: any; 
 }
-  
+
+export interface IErrorMessage {
+	message: string;
+	line: number;
+	ignorable: boolean;
+	identifier: string;
+}

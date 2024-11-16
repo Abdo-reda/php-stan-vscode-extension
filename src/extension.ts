@@ -4,6 +4,13 @@ import { showRanooon } from './utilities/vscodeUtilities';
 
 const phpStanService = new PhpStanService();
 
+//TODO:
+	//- check php version and dependency
+	//- update configuration, update markdown and so on ..
+	//- pick diagnostic approach (on save? on change?)
+	//- pick diagnostic files/directory (entire direcotry? active file?)
+	//- Add a check on the buttom x when error, check when no error, loading when analysing.
+
 export function activate(context: vscode.ExtensionContext) {
 
 	const diagnosticCollection = vscode.languages.createDiagnosticCollection('temp');

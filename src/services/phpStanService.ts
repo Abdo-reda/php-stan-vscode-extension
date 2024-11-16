@@ -1,6 +1,7 @@
 import { ExtensionConfigurations } from "../constants/configurationEnum";
-import { IErrorOutput } from "../interfaces/errorOutputInterface";
-import { addDiagnostic, fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground } from "../utilities/vscodeUtilities";
+import replaceTokens from "../constants/languageTokensMap";
+import { IErrorMessage, IErrorOutput } from "../interfaces/errorOutputInterface";
+import { addDiagnosticsToFile, fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground } from "../utilities/vscodeUtilities";
 import { GithubService } from "./githubService";
 import * as vscode from "vscode";
 
@@ -8,6 +9,11 @@ export class PhpStanService {
   private githubService = new GithubService();
   private storagePath: vscode.Uri = vscode.Uri.file("");
   private diagCollection!: vscode.DiagnosticCollection;
+
+  constructor() {
+    this.onAnalysisError = this.onAnalysisError.bind(this);
+    this.onAnalysisSuccess = this.onAnalysisSuccess.bind(this);
+  }
 
   async initPhpStan(storagePath: vscode.Uri, diagCollection: vscode.DiagnosticCollection ) {
     this.storagePath = storagePath;
@@ -27,7 +33,7 @@ export class PhpStanService {
     const level = getConfiguration<number>(ExtensionConfigurations.LEVEL);
     console.log(`PhpStan: Analysing ${path}, Level ${level}`);
     runCommandInBackground(
-      `php ${this.phpStanPath.fsPath} analyse src -l ${level} --no-progress --no-ansi --error-format=json`, 
+      `php ${this.phpStanPath.fsPath} analyse src -l ${level} --no-progress --error-format=json`, 
       path, 
       this.onAnalysisError, 
       this.onAnalysisSuccess
@@ -54,16 +60,40 @@ export class PhpStanService {
 
   private onAnalysisError(output: string) {
     const errorOutput = JSON.parse(output) as IErrorOutput;
-    console.log('----- on Analysis Error -----', errorOutput); 
+    // console.log('----- on Analysis Error -----', errorOutput); 
     for (const [key, value] of Object.entries(errorOutput.files)) {
-      console.log('-- yoww', key, value)
-      value.messages.forEach(m => {
-        addDiagnostic(this.diagCollection, key, m.message, m.line);
-      });
+      const diangostics = this.buildDiagnosticsFromOutput(value.messages);
+      addDiagnosticsToFile(
+        this.diagCollection, 
+        key, 
+        diangostics
+      );
     }
   }
 
   private onAnalysisSuccess(output: string) {
     vscode.window.showInformationMessage(`Analysis completed successfully ${output}`);
+  }
+
+  private buildDiagnosticsFromOutput(messages: IErrorMessage[]): vscode.Diagnostic[] {
+    const diagnostics = messages.map((m) => {
+      const range = new vscode.Range(
+        m.line-1,
+        0,
+        m.line-1,
+        10,
+        // document.lineAt(line).range.end.character
+      ); 
+  
+      const diagnostic = new vscode.Diagnostic(
+        range,
+        replaceTokens(m.message), //TODO: I think this is a bug and needs only be done for the last error.
+        vscode.DiagnosticSeverity.Error
+      );
+  
+      return diagnostic;
+    });
+  
+    return diagnostics;
   }
 }

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { exec } from "child_process";
 import { ExtensionConfigurations } from "../constants/configurationEnum";
+import { IErrorMessage } from "../interfaces/errorOutputInterface";
 
 // export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
 //   vscode.window.withProgress(
@@ -67,6 +68,7 @@ export function runCommandInBackground(
   errorCallback: (output: string) => void = () => {},
   successCallback: (output: string) => void = () => {}
 ) {
+  console.log(`PhpStan: Running command ${command}`);
   exec(command, { cwd: workingDirectory }, (error, stdout, stderr) => {
     if (error) {
       errorCallback(stdout);
@@ -80,25 +82,11 @@ export function runCommandInBackground(
   });
 }
 
-export function addDiagnostic(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, message: string, line: number) {
-  console.log('PhpStan: adding error diag', filePath, message, line);
-  const temp = vscode.Uri.file(filePath);
+export function addDiagnosticsToFile(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, errors: vscode.Diagnostic[]) {
+  console.log(`PhpStan: adding error diagnostics to file ${filePath}.`, errors);
+  const file = vscode.Uri.file(filePath);
   // const document = vscode.workspace.openTextDocument(filePath); //fix this TODO: fifxxixixi
-  const range = new vscode.Range(
-    line,
-    0,
-    line,
-    10,
-    // document.lineAt(line).range.end.character
-  ); 
-
-  const diagnostic = new vscode.Diagnostic(
-    range,
-    message,
-    vscode.DiagnosticSeverity.Warning 
-  );
-
-  diagnosticCollection.set(temp, [diagnostic]);
+  diagnosticCollection.set(file, errors);
 }
 
 export function getActiveDirectory(): string | undefined {
@@ -120,3 +108,22 @@ export function getActiveDirectory(): string | undefined {
 
   return undefined;
 }
+
+// function onChange() {
+//   let uri = document.uri;
+//   check(uri.fsPath, goConfig).then(errors => {
+//     diagnosticCollection.clear();
+//     let diagnosticMap: Map<string, vscode.Diagnostic[]> = new Map();
+//     errors.forEach(error => {
+//       let canonicalFile = vscode.Uri.file(error.file).toString();
+//       let range = new vscode.Range(error.line-1, error.startColumn, error.line-1, error.endColumn);
+//       let diagnostics = diagnosticMap.get(canonicalFile);
+//       if (!diagnostics) { diagnostics = []; }
+//       diagnostics.push(new vscode.Diagnostic(range, error.msg, error.severity));
+//       diagnosticMap.set(canonicalFile, diagnostics);
+//     });
+//     diagnosticMap.forEach((diags, file) => {
+//       diagnosticCollection.set(vscode.Uri.parse(file), diags);
+//     });
+//   })
+// }
