@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
-import { exec } from "child_process";
+import { exec, execSync } from "child_process";
 import { ExtensionConfigurations } from "../constants/configurationEnum";
 import { IErrorMessage } from "../interfaces/errorOutputInterface";
+import { stat } from "fs";
 
 // export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
 //   vscode.window.withProgress(
@@ -64,11 +65,11 @@ export async function fileExistsAsync(uri: vscode.Uri): Promise<boolean> {
 
 export function runCommandInBackground(
   command: string,
-  workingDirectory: string | undefined = undefined,
   errorCallback: (output: string) => void = () => {},
-  successCallback: (output: string) => void = () => {}
+  successCallback: (output: string) => void = () => {},
+  workingDirectory: string | undefined = undefined,
 ) {
-  console.log(`PhpStan: Running command ${command}`);
+  console.log(`PHPStan: Running command '${command}'`);
   exec(command, { cwd: workingDirectory }, (error, stdout, stderr) => {
     if (error) {
       errorCallback(stdout);
@@ -82,8 +83,25 @@ export function runCommandInBackground(
   });
 }
 
+export function runCommandSync(
+  command: string,
+  workingDirectory: string | undefined = undefined
+): string {
+  console.log(`PHPStan: Running command '${command}'`);
+  try {
+    const output = execSync(command, { cwd: workingDirectory, encoding: "utf-8" });
+    return output;
+  } catch (error) {
+    if (error instanceof Error && "stdout" in error) {
+      const output = error.stdout as string;
+      throw new Error(output);
+    }
+    throw error;
+  }
+}
+
 export function addDiagnosticsToFile(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, errors: vscode.Diagnostic[]) {
-  console.log(`PhpStan: adding error diagnostics to file ${filePath}.`, errors);
+  console.log(`PHPStan: adding error diagnostics to file ${filePath}.`, errors);
   const file = vscode.Uri.file(filePath);
   // const document = vscode.workspace.openTextDocument(filePath); //fix this TODO: fifxxixixi
   diagnosticCollection.set(file, errors);
@@ -107,6 +125,18 @@ export function getActiveDirectory(): string | undefined {
   }
 
   return undefined;
+}
+
+export function showInfoMessage(msg: string): void {
+  vscode.window.showInformationMessage(`PHPStan: ${msg}!`);
+}
+
+export function showWarningMessage(msg: string): void {
+  vscode.window.showWarningMessage(`PHPStan: ${msg}!`);
+}
+
+export function showErrorMessage(msg: string): void {
+  vscode.window.showErrorMessage(`PHPStan: ${msg}!`);
 }
 
 // function onChange() {

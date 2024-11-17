@@ -24,23 +24,36 @@
       }
     ],
     "configuration": {
-      "title": "PhpStan",
+      "title": "PHPStan",
       "properties": {
+        "php-stan.phpVersion": {
+          "type": "null",
+          "default": "7.2.0",
+          "markdownDescription": "PHP Version used to run php-stan. The minimum version required is 7.2.0. [Reference](https://phpstan.org/user-guide/getting-started)"
+        },
         "php-stan.approach": {
           "type": "string",
           "enum": [
-            "phar",
-            "composer"
+            "phar"
           ],
           "default": "phar",
-          "description": "Approach used to download and execute php stan. Either phar file is used or its installed using composer. [Reference](https://phpstan.org/user-guide/getting-started#installation)"
+          "markdownDescription": "Approach used to download and execute php-stan. Currently only phar files are used. Later, support for composer will be added. [Reference](https://phpstan.org/user-guide/getting-started#installation)"
         },
         "php-stan.level": {
           "type": "number",
           "default": 5,
           "minimum": 0,
           "maximum": 9,
-          "description": "Level used for analysis (-l). [Reference](https://phpstan.org/user-guide/rule-levels)"
+          "markdownDescription": "Level used for analysis (-l). Only values between 0-9 inclusive are allowed. [Reference](https://phpstan.org/user-guide/rule-levels)"
+        }
+      }
+    },
+    "icons": {
+      "php-stan": {
+        "description": "PHPStan Icon",
+        "default": {
+          "fontPath": "./distroicons.woff",
+          "fontCharacter": "\\E001"
         }
       }
     }

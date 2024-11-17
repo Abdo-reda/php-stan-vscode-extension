@@ -1,12 +1,14 @@
 import { ExtensionConfigurations } from "../constants/configurationEnum";
 import replaceTokens from "../constants/languageTokensMap";
 import { IErrorMessage, IErrorOutput } from "../interfaces/errorOutputInterface";
-import { addDiagnosticsToFile, fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground } from "../utilities/vscodeUtilities";
+import { addDiagnosticsToFile, fileExistsAsync, getActiveDirectory, getConfiguration, runCommandInBackground, showInfoMessage } from "../utilities/vscodeUtilities";
 import { GithubService } from "./githubService";
 import * as vscode from "vscode";
+import { PhpService } from "./phpService";
 
 export class PhpStanService {
   private githubService = new GithubService();
+  private phpService = new PhpService();
   private storagePath: vscode.Uri = vscode.Uri.file("");
   private diagCollection!: vscode.DiagnosticCollection;
 
@@ -16,6 +18,11 @@ export class PhpStanService {
   }
 
   async initPhpStan(storagePath: vscode.Uri, diagCollection: vscode.DiagnosticCollection ) {
+    console.log("PHPStan: Initialising PHP Stan");
+    const isValid = this.phpService.checkPhpVersion();
+    if (!isValid) {
+      return;
+    } 
     this.storagePath = storagePath;
     this.diagCollection = diagCollection;
     await this.downloadLatestPharAsync(this.phpStanPath);
@@ -31,12 +38,12 @@ export class PhpStanService {
 
   private analyseFile(path: string) {
     const level = getConfiguration<number>(ExtensionConfigurations.LEVEL);
-    console.log(`PhpStan: Analysing ${path}, Level ${level}`);
+    console.log(`PHPStan: Analysing ${path}, Level ${level}`);
     runCommandInBackground(
       `php ${this.phpStanPath.fsPath} analyse src -l ${level} --no-progress --error-format=json`, 
-      path, 
       this.onAnalysisError, 
-      this.onAnalysisSuccess
+      this.onAnalysisSuccess,
+      path, 
     );
   }
 
@@ -47,7 +54,7 @@ export class PhpStanService {
   async downloadLatestPharAsync(filePath: vscode.Uri) {
     var exists = await fileExistsAsync(filePath);
     if (exists) {
-      console.log("PhpStan: Found PHP stan version");
+      console.log("PHPStan: Found PHP stan version");
       return;
     }
 
@@ -55,7 +62,7 @@ export class PhpStanService {
     const arrayBuffer = await file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer); // Convert ArrayBuffer to Uint8Array
     await vscode.workspace.fs.writeFile(filePath, uint8Array);
-    vscode.window.showInformationMessage(`Successfully downloaded phpStan to ${filePath.fsPath}`);
+    showInfoMessage(`Successfully downloaded phpStan to ${filePath.fsPath}`);
   }
 
   private onAnalysisError(output: string) {
@@ -72,7 +79,7 @@ export class PhpStanService {
   }
 
   private onAnalysisSuccess(output: string) {
-    vscode.window.showInformationMessage(`Analysis completed successfully ${output}`);
+    showInfoMessage(`Analysis completed successfully ${output}`);
   }
 
   private buildDiagnosticsFromOutput(messages: IErrorMessage[]): vscode.Diagnostic[] {
@@ -87,7 +94,8 @@ export class PhpStanService {
   
       const diagnostic = new vscode.Diagnostic(
         range,
-        replaceTokens(m.message), //TODO: I think this is a bug and needs only be done for the last error.
+        // replaceTokens(m.message), //TODO: I think this is a bug and needs only be done for the last error.
+        "THis code contains a sameh, please delete",
         vscode.DiagnosticSeverity.Error
       );
   
