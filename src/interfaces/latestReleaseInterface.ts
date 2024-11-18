@@ -9,3 +9,8 @@ interface IGithubAsset {
 	name: string,
 	browser_download_url: string,
 }
+
+export interface IPhpStanRelease {
+	file: Blob,
+	version: string,
+}

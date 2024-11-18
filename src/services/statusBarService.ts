@@ -18,7 +18,7 @@ export class StatusBarService {
         context.subscriptions.push(this._statusBar);
     }
 
-    public setVersion(version: string): void {
+    public setText(version: string): void {
         this._statusBar.text = `$(php-stan) ${version}`;
     }
 

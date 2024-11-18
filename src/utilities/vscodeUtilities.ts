@@ -103,7 +103,6 @@ export function runCommandSync(
 export function addDiagnosticsToFile(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, errors: vscode.Diagnostic[]) {
   console.log(`PHPStan: adding error diagnostics to file ${filePath}.`, errors);
   const file = vscode.Uri.file(filePath);
-  // const document = vscode.workspace.openTextDocument(filePath); //fix this TODO: fifxxixixi
   diagnosticCollection.set(file, errors);
 }
 
@@ -116,11 +115,6 @@ export function getActiveDirectory(): string | undefined {
 
   const activeEditor = vscode.window.activeTextEditor;
   if (activeEditor) {
-    console.log(
-      "---- active editor",
-      activeEditor.document.fileName,
-      activeEditor.document.uri.fsPath
-    );
     return vscode.Uri.joinPath(activeEditor.document.uri, "..").fsPath;
   }
 

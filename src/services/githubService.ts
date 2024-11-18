@@ -1,4 +1,4 @@
-import { IGithubLatestRelease } from "../interfaces/latestReleaseInterface";
+import { IGithubLatestRelease, IPhpStanRelease } from "../interfaces/latestReleaseInterface";
 import * as vscode from 'vscode';
 
 export class GithubService {
@@ -8,7 +8,7 @@ export class GithubService {
 		return body;
 	}
 
-	async downloadLatestReleaseAsync(): Promise<Blob> {
+	async downloadLatestReleaseAsync(): Promise<IPhpStanRelease> {
 		var latestRelease = await this.getPhpStanLatestReleaseAsync();
 		var pharLink = latestRelease.assets.find(a => a.browser_download_url.includes('phar'))?.browser_download_url;
 		if (!pharLink) {
@@ -17,6 +17,9 @@ export class GithubService {
 		vscode.window.showInformationMessage(`Downloading phpStan ${latestRelease.tag_name} ...`);
 		var res = await fetch(pharLink!);
 		var file = await res.blob();
-		return file;
+		return {
+			file: file,
+			version: latestRelease.tag_name
+		};
 	}
 }

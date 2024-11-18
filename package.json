@@ -10,7 +10,7 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": ["onLanguage:php"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -66,9 +66,9 @@
     },
     "icons": {
       "php-stan": {
-        "description": "PHPStan Icon",
+        "description": "PHPStan Icons",
         "default": {
-          "fontPath": "./distroicons.woff",
+          "fontPath": "./assets/phpStanIcons.woff",
           "fontCharacter": "\\E001"
         }
       }

@@ -20,12 +20,15 @@ import { GithubService } from "./githubService";
 import * as vscode from "vscode";
 import { PhpService } from "./phpService";
 import * as path from 'path';
+import { GlobalStateEnum } from "../constants/stateEnum";
 
 export class PhpStanService {
   private githubService = new GithubService();
   private phpService = new PhpService();
   private storagePath: vscode.Uri = vscode.Uri.file("");
   private diagCollection!: vscode.DiagnosticCollection;
+  private phpStanVersion = "";
+  private context!: vscode.ExtensionContext;
 
   constructor() {
     this.onAnalysisError = this.onAnalysisError.bind(this);
@@ -33,12 +36,13 @@ export class PhpStanService {
   }
 
   async initPhpStanAsync(
-    storagePath: vscode.Uri,
+    context: vscode.ExtensionContext,
   ): Promise<vscode.Disposable[]> {
     console.log("PHPStan: Initialising PHP Stan");
     const disposables: vscode.Disposable[] = [];
-    this.diagCollection = vscode.languages.createDiagnosticCollection('PHPStanDiagnostics');;
-    this.storagePath = storagePath;
+    this.diagCollection = vscode.languages.createDiagnosticCollection('PHPStanDiagnostics');
+    this.storagePath = context.storageUri!; //TODO: will this work in non-workspaces? and also, is this different for each workspace? this is fucked.
+    this.context = context;
 
     const isValid = this.phpService.checkPhpVersion();
     if (!isValid) { return disposables; }
@@ -77,17 +81,21 @@ export class PhpStanService {
   }
 
   async downloadLatestPharAsync(filePath: vscode.Uri) {
-    var exists = await fileExistsAsync(filePath);
-    if (exists) {
-      console.log("PHPStan: Found PHP stan version");
+    const exists = await fileExistsAsync(filePath);
+    this.phpStanVersion = this.context.globalState.get<string>(GlobalStateEnum.PHP_STAN_VERSION) ?? "";
+    if (exists && this.phpStanVersion) {
+      console.log(`PHPStan: Found PHPStan version ${this.phpStanVersion}`);
       return;
     }
 
-    var file = await this.githubService.downloadLatestReleaseAsync();
-    const arrayBuffer = await file.arrayBuffer();
+    const release = await this.githubService.downloadLatestReleaseAsync();
+    const arrayBuffer = await release.file.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     await vscode.workspace.fs.writeFile(filePath, uint8Array);
-    showInfoMessage(`Successfully downloaded phpStan to ${filePath.fsPath}`);
+    this.phpStanVersion = release.version;
+    this.context.globalState.update(GlobalStateEnum.PHP_STAN_VERSION, this.phpStanVersion);
+    showInfoMessage(`Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
+    console.log(`PHPStan: Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
   }
 
   private onAnalysisError(output: string) {
