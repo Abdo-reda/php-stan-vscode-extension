@@ -15,12 +15,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "php-stan.turtle",
-        "title": "Turtle 🐢"
-      },
-      {
-        "command": "php-stan.analyseRanaFile",
-        "title": "Analyse a file"
+        "command": "php-stan.analyse",
+        "title": "PHPStan: Run Analysis."
       }
     ],
     "configuration": {
@@ -31,13 +27,33 @@
           "default": "7.2.0",
           "markdownDescription": "PHP Version used to run php-stan. The minimum version required is 7.2.0. [Reference](https://phpstan.org/user-guide/getting-started)"
         },
-        "php-stan.approach": {
+        "php-stan.binary": {
           "type": "string",
           "enum": [
             "phar"
           ],
           "default": "phar",
           "markdownDescription": "Approach used to download and execute php-stan. Currently only phar files are used. Later, support for composer will be added. [Reference](https://phpstan.org/user-guide/getting-started#installation)"
+        },
+        "php-stan.analysisOn": {
+          "type": "string",
+          "enum": [
+            "manual",
+            "onSave",
+            "onChange"
+          ],
+          "default": "onSave",
+          "markdownDescription": "When should php-stan analysis run. By default, analysis runs after saving any file. You can however choose to do it manually by running the php-stan analyse command, or after changing the contents of a file."
+        },
+        "php-stan.analysisScope": {
+          "type": "string",
+          "enum": [
+            "file",
+            "directory",
+            "workspace"
+          ],
+          "default": "directory",
+          "markdownDescription": "What will be included in the analysis. By default, analysis runs on the active directory. You can however choose to do it only on the active file or on the entire workspace."
         },
         "php-stan.level": {
           "type": "number",

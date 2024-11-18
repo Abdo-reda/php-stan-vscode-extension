@@ -12,12 +12,11 @@ const phpStanService = new PhpStanService();
 		//+ tooltip info
 	//- Finanlly, publish the extension.
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
 
-	const diagnosticCollection = vscode.languages.createDiagnosticCollection('temp');
-	context.subscriptions.push(diagnosticCollection);
+	
+	const disposables = await phpStanService.initPhpStanAsync(context.storageUri!);
 
-	phpStanService.initPhpStan(context.storageUri!, diagnosticCollection);
 
 	// const statusBar = createStatusBar();
 	// context.subscriptions.push(statusBar);
@@ -26,15 +25,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 	console.log('PHPStan: Congratulations, your extension "php-stan" is now active!');
 
-	const disposable = vscode.commands.registerCommand('php-stan.turtle', () => {
-		vscode.window.showInformationMessage('Hello RANA');
-	});
-
-	const timeCommand = vscode.commands.registerCommand('php-stan.analyseRanaFile', () => {
+	const analyseDisposable = vscode.commands.registerCommand('php-stan.analyse', () => {
 		phpStanService.analyseWorkspace();
 	});
 
-	context.subscriptions.push(disposable, timeCommand);
+	context.subscriptions.push(...disposables, analyseDisposable);
 }
 
 
