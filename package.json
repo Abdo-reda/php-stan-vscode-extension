@@ -16,7 +16,7 @@
     "commands": [
       {
         "command": "php-stan.analyse",
-        "title": "PHPStan: Run Analysis."
+        "title": "Run Analysis."
       }
     ],
     "configuration": {

@@ -1,4 +1,5 @@
 import { runCommandSync, showInfoMessage, showWarningMessage } from "../utilities/vscodeUtilities";
+import { LoggingService } from "./loggingService";
 
 export class PhpService {
   private MIN_PHP_VERSION = "7.2.0";
@@ -6,14 +7,13 @@ export class PhpService {
   checkPhpVersion(): boolean {
     const phpVersion = this.getPhpVersion();
     const phpBinary = this.getPhpBinary();
-    console.log(`PHPStan: PHP Version ${phpVersion}, Found at ${phpBinary}`);
-    //showRanoon
+    LoggingService.log(`PHP Version ${phpVersion}, Found at ${phpBinary}`);
     const isValid = this.comparePhpVersion();
     return isValid;
   }
 
   private getPhpVersion(): string {
-    console.log("PHPStan: Getting PHP Version");
+    LoggingService.log("Getting PHP Version ...");
     try {
       const output = runCommandSync("php -r \"echo PHP_VERSION;\"");
       return output;
@@ -23,7 +23,7 @@ export class PhpService {
   }
 
   private getPhpBinary(): string {
-    console.log("PHPStan: Getting PHP Binary");
+    LoggingService.log("Getting PHP Binary ...");
     try {
       const output = runCommandSync("php -r \"echo PHP_BINARY;\"");
       return output;
@@ -33,7 +33,7 @@ export class PhpService {
   }
 
   private comparePhpVersion(): boolean {
-    console.log("PHPStan: Checking PHP Version");
+    LoggingService.log("Checking PHP Version ...");
     try {
       runCommandSync(`php -r \"exit(version_compare(PHP_VERSION, '${this.MIN_PHP_VERSION}', '>=') ? 0 : 1);\"`);
       this.onPhpVersionSuccess();
@@ -45,12 +45,12 @@ export class PhpService {
   }
 
   private onPhpVersionError() {
-    console.warn("PHPStan: PHP Version Error.");
+    LoggingService.warn("PHP Version Error.");
     showWarningMessage(`Minimum PHP Version not found. Please install PHP ${this.MIN_PHP_VERSION} or higher`);
   }
 
   private onPhpVersionSuccess(): boolean {
-    console.log("PHPStan: Php Version Success");
+    LoggingService.log("Php Version Success !");
     return true;
   }
 }

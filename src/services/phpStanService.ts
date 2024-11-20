@@ -12,6 +12,7 @@ import {
   addDiagnosticsToFile,
   fileExistsAsync,
   getActiveDirectory,
+  getActiveDocument,
   getConfiguration,
   runCommandInBackground,
   showInfoMessage,
@@ -21,6 +22,8 @@ import * as vscode from "vscode";
 import { PhpService } from "./phpService";
 import * as path from 'path';
 import { GlobalStateEnum } from "../constants/stateEnum";
+import { LoggingService } from "./loggingService";
+import { StatusBarService } from "./statusBarService";
 
 export class PhpStanService {
   private githubService = new GithubService();
@@ -28,7 +31,8 @@ export class PhpStanService {
   private storagePath: vscode.Uri = vscode.Uri.file("");
   private diagCollection!: vscode.DiagnosticCollection;
   private phpStanVersion = "";
-  private context!: vscode.ExtensionContext;
+  private analyseOn = AnalysisOn.ON_SAVE;
+  private statusBarService!: StatusBarService; //maybe assign in constructor.
 
   constructor() {
     this.onAnalysisError = this.onAnalysisError.bind(this);
@@ -37,37 +41,42 @@ export class PhpStanService {
 
   async initPhpStanAsync(
     context: vscode.ExtensionContext,
-  ): Promise<vscode.Disposable[]> {
-    console.log("PHPStan: Initialising PHP Stan");
+    statusBarService: StatusBarService,
+  ): Promise<void> {
+    LoggingService.log("Initialising PHP Stan ...");
     const disposables: vscode.Disposable[] = [];
     this.diagCollection = vscode.languages.createDiagnosticCollection('PHPStanDiagnostics');
     this.storagePath = context.storageUri!; //TODO: will this work in non-workspaces? and also, is this different for each workspace? this is fucked.
-    this.context = context;
-
+    
     const isValid = this.phpService.checkPhpVersion();
-    if (!isValid) { return disposables; }
+    if (!isValid) return; 
 
+    this.phpStanVersion = context.globalState.get<string>(GlobalStateEnum.PHP_STAN_VERSION) ?? "";
     await this.downloadLatestPharAsync(this.phpStanPath);
+    context.globalState.update(GlobalStateEnum.PHP_STAN_VERSION, this.phpStanVersion);
 
     const analysisDisposable = this.setupAnalysisListner();
-    if (analysisDisposable) {disposables.push(analysisDisposable);}
+    disposables.push(...analysisDisposable);
 
-    return disposables;
+    const configurationDisposable = this.onConfigurationChange();
+    disposables.push(configurationDisposable);
+
+    context.subscriptions.push(this.diagCollection, ...disposables);
+
+    this.analyseActiveDocument();
   }
 
-  analyseWorkspace() {
-    const activeDirectory = getActiveDirectory();
-    if (!activeDirectory) {
-      return;
-    }
-    this.analysePath(activeDirectory);
+  analyseActiveDocument() {
+    const activeDocument = getActiveDocument();
+    if (!activeDocument) return;
+    this.analyseDocument(activeDocument);
   }
 
   private analysePath(analysisPath: string) {
     const level = getConfiguration<number>(ExtensionConfigurations.LEVEL);
     const dir = path.dirname(analysisPath);
     const base = path.basename(analysisPath);
-    console.log(`PHPStan: Analysing ${dir} ${base}, Level ${level}`);
+    LoggingService.log(`Analysing ${dir} ${base}, Level ${level}`);
     runCommandInBackground(
       `php ${this.phpStanPath.fsPath} analyse ${base} -l ${level} --no-progress --error-format=json`,
       this.onAnalysisError,
@@ -80,11 +89,10 @@ export class PhpStanService {
     return vscode.Uri.joinPath(this.storagePath, "phpstan.phar");
   }
 
-  async downloadLatestPharAsync(filePath: vscode.Uri) {
+  async downloadLatestPharAsync(filePath: vscode.Uri): Promise<void> {
     const exists = await fileExistsAsync(filePath);
-    this.phpStanVersion = this.context.globalState.get<string>(GlobalStateEnum.PHP_STAN_VERSION) ?? "";
     if (exists && this.phpStanVersion) {
-      console.log(`PHPStan: Found PHPStan version ${this.phpStanVersion}`);
+      LoggingService.log(`Found PHPStan version ${this.phpStanVersion}`);
       return;
     }
 
@@ -93,9 +101,8 @@ export class PhpStanService {
     const uint8Array = new Uint8Array(arrayBuffer);
     await vscode.workspace.fs.writeFile(filePath, uint8Array);
     this.phpStanVersion = release.version;
-    this.context.globalState.update(GlobalStateEnum.PHP_STAN_VERSION, this.phpStanVersion);
     showInfoMessage(`Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
-    console.log(`PHPStan: Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
+    LoggingService.log(`Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
   }
 
   private onAnalysisError(output: string) {
@@ -106,41 +113,45 @@ export class PhpStanService {
     }
   }
 
-  private setupAnalysisListner(): vscode.Disposable|null {
-    const analyseOn = getConfiguration<AnalysisOn>(
-      ExtensionConfigurations.ANALYSIS_ON
-    );
-
-    if (analyseOn === AnalysisOn.ON_CHANGE) {
-      return this.setupOnChangeListener();
-    } else if (analyseOn === AnalysisOn.ON_SAVE) {
-      return this.setupOnSaveListener();
-    }
-    return null;
+  private setupAnalysisListner(): vscode.Disposable[] {
+    this.analyseOn = getConfiguration<AnalysisOn>(ExtensionConfigurations.ANALYSIS_ON) ?? AnalysisOn.ON_SAVE;
+    const disposables: vscode.Disposable[] = [];
+    disposables.push(this.setupOnChangeListener());
+    disposables.push(this.setupOnSaveListener());
+    return disposables;
   }
 
-  private onAnalysis(document: vscode.TextDocument) {
-    const analyseOn = getConfiguration<AnalysisScope>(
+  private analyseDocument(document: vscode.TextDocument) {
+    const analyseScope = getConfiguration<AnalysisScope>(
       ExtensionConfigurations.ANALYSIS_SCOPE
     );
 
     const documentURI = document.uri;
     const workspace = vscode.workspace.getWorkspaceFolder(documentURI);
 
-    if (analyseOn === AnalysisScope.FILE) {
-      console.log("PHPStan: Analysing File Scope");
+    if (analyseScope === AnalysisScope.FILE) {
+      LoggingService.log("Analysing File Scope");
       this.analysePath(documentURI.fsPath);
-    } else if (analyseOn === AnalysisScope.DIRECTORY || !workspace) {
-      console.log("PHPStan: Analysing Directory Scope");
+    } else if (analyseScope === AnalysisScope.DIRECTORY || !workspace) {
+      LoggingService.log("Analysing Directory Scope");
       this.analysePath(vscode.Uri.joinPath(documentURI, '..').fsPath);
-    } else if (analyseOn === AnalysisScope.WORKSPACE && workspace) {
-      console.log("PHPStan: Analysing Workspace Scope");
+    } else if (analyseScope === AnalysisScope.WORKSPACE && workspace) {
+      LoggingService.log("Analysing Workspace Scope");
       this.analysePath(workspace.uri.fsPath);
     }
   }
 
   private onAnalysisSuccess(output: string) {
     showInfoMessage(`Analysis completed successfully ${output}`);
+  }
+
+  private onConfigurationChange(): vscode.Disposable {
+    return vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration(ExtensionConfigurations.ANALYSIS_ON)) {
+        LoggingService.log("AnalysisOn Configuration Changed.");
+        this.analyseOn = getConfiguration<AnalysisOn>(ExtensionConfigurations.ANALYSIS_ON) ?? AnalysisOn.ON_SAVE;
+      }
+    });
   }
 
   private buildDiagnosticsFromOutput(
@@ -163,24 +174,26 @@ export class PhpStanService {
   }
 
   private setupOnChangeListener(): vscode.Disposable {
-    console.log("PHPStan: Setting up OnChange Listener");
-    const changeDisposable = vscode.workspace.onDidChangeTextDocument(
+    LoggingService.log("Setting up OnChange Listener");
+    const disposable = vscode.workspace.onDidChangeTextDocument(
       (event) => {
-        console.log(`PHPStan: file changed ${event.document.fileName}`);
-        this.onAnalysis(event.document);
+        if (this.analyseOn !== AnalysisOn.ON_CHANGE) return;
+        LoggingService.log(`file changed ${event.document.fileName}`);
+        this.analyseDocument(event.document);
       }
     );
-    return changeDisposable;
+    return disposable;
   }
 
   private setupOnSaveListener(): vscode.Disposable {
-    console.log("PHPStan: Setting up OnSave Listener");
-    const saveDisposable = vscode.workspace.onDidSaveTextDocument(
+    LoggingService.log("Setting up OnSave Listener");
+    const disposable = vscode.workspace.onDidSaveTextDocument(
       (document) => {
-        console.log(`PHPStan: file saved ${document.fileName}`);
-        this.onAnalysis(document);
+        if (this.analyseOn !== AnalysisOn.ON_SAVE) return;
+        LoggingService.log(`file saved ${document.fileName}`);
+        this.analyseDocument(document);
       }
     );
-    return saveDisposable;
+    return disposable;
   }
 }

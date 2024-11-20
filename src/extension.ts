@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { PhpStanService } from './services/phpStanService';
 import { showRanooon } from './utilities/vscodeUtilities';
 import { StatusBarService } from './services/statusBarService';
+import { LoggingService } from './services/loggingService';
 
 const phpStanService = new PhpStanService();
 
@@ -18,18 +19,16 @@ const phpStanService = new PhpStanService();
 export async function activate(context: vscode.ExtensionContext) {
 
 	
-	const disposables = await phpStanService.initPhpStanAsync(context);
-
-	const statusBar = new StatusBarService(context);
-	statusBar.setText('blah');
-
-	console.log('PHPStan: PHPStan is now active!');
+	const statusBarService = new StatusBarService(context);
+	await phpStanService.initPhpStanAsync(context);
 
 	const analyseDisposable = vscode.commands.registerCommand('php-stan.analyse', () => {
-		phpStanService.analyseWorkspace();
+		phpStanService.analyseActiveDocument();
 	});
+	
+	context.subscriptions.push(analyseDisposable);
 
-	context.subscriptions.push(...disposables, analyseDisposable);
+	LoggingService.log('PHPStan is now active!');
 }
 
 

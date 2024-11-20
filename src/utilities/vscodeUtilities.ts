@@ -3,6 +3,7 @@ import { exec, execSync } from "child_process";
 import { ExtensionConfigurations } from "../constants/configurationEnum";
 import { IErrorMessage } from "../interfaces/errorOutputInterface";
 import { stat } from "fs";
+import { LoggingService } from "../services/loggingService";
 
 // export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
 //   vscode.window.withProgress(
@@ -55,6 +56,7 @@ export function showRanooon(
 }
 
 export async function fileExistsAsync(uri: vscode.Uri): Promise<boolean> {
+  LoggingService.log(`Checking if PHPStan is already downloaded at ${uri.fsPath}`);
   try {
     await vscode.workspace.fs.stat(uri);
     return true;
@@ -69,7 +71,7 @@ export function runCommandInBackground(
   successCallback: (output: string) => void = () => {},
   workingDirectory: string | undefined = undefined,
 ) {
-  console.log(`PHPStan: Running command '${command}'`);
+  LoggingService.log(`Running command '${command}'`);
   exec(command, { cwd: workingDirectory }, (error, stdout, stderr) => {
     if (error) {
       errorCallback(stdout);
@@ -87,7 +89,7 @@ export function runCommandSync(
   command: string,
   workingDirectory: string | undefined = undefined
 ): string {
-  console.log(`PHPStan: Running command '${command}'`);
+  LoggingService.log(`Running command '${command}'`);
   try {
     const output = execSync(command, { cwd: workingDirectory, encoding: "utf-8" });
     return output;
@@ -101,7 +103,7 @@ export function runCommandSync(
 }
 
 export function addDiagnosticsToFile(diagnosticCollection: vscode.DiagnosticCollection, filePath: string, errors: vscode.Diagnostic[]) {
-  console.log(`PHPStan: adding error diagnostics to file ${filePath}.`, errors);
+  LoggingService.log(`adding error diagnostics to file ${filePath}.`, errors);
   const file = vscode.Uri.file(filePath);
   diagnosticCollection.set(file, errors);
 }
@@ -121,33 +123,20 @@ export function getActiveDirectory(): string | undefined {
   return undefined;
 }
 
+export function getActiveDocument(): vscode.TextDocument|undefined {
+
+  const activeEditor = vscode.window.activeTextEditor;
+  return activeEditor?.document;
+}
+
 export function showInfoMessage(msg: string): void {
-  vscode.window.showInformationMessage(`PHPStan: ${msg}!`);
+  vscode.window.showInformationMessage(`${msg}!`);
 }
 
 export function showWarningMessage(msg: string): void {
-  vscode.window.showWarningMessage(`PHPStan: ${msg}!`);
+  vscode.window.showWarningMessage(`${msg}!`);
 }
 
 export function showErrorMessage(msg: string): void {
-  vscode.window.showErrorMessage(`PHPStan: ${msg}!`);
+  vscode.window.showErrorMessage(`${msg}!`);
 }
-
-// function onChange() {
-//   let uri = document.uri;
-//   check(uri.fsPath, goConfig).then(errors => {
-//     diagnosticCollection.clear();
-//     let diagnosticMap: Map<string, vscode.Diagnostic[]> = new Map();
-//     errors.forEach(error => {
-//       let canonicalFile = vscode.Uri.file(error.file).toString();
-//       let range = new vscode.Range(error.line-1, error.startColumn, error.line-1, error.endColumn);
-//       let diagnostics = diagnosticMap.get(canonicalFile);
-//       if (!diagnostics) { diagnostics = []; }
-//       diagnostics.push(new vscode.Diagnostic(range, error.msg, error.severity));
-//       diagnosticMap.set(canonicalFile, diagnostics);
-//     });
-//     diagnosticMap.forEach((diags, file) => {
-//       diagnosticCollection.set(vscode.Uri.parse(file), diags);
-//     });
-//   })
-// }
