@@ -51,7 +51,7 @@ export class StatusBarService {
         this.setDefaultCommand();
         this.setDefaultToolTip();
         this.statusBar.color = this.defaultColor;
-        this.statusBar.text = `$(php-stan) ${this.phpStanVersion}`;
+        this.statusBar.text = `$(php-stan-default) ${this.phpStanVersion}`;
     }
     
     public setLoadingState(): void {

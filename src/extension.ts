@@ -8,15 +8,11 @@ const phpStanService = new PhpStanService();
 
 //TODO:
 	//- Test the storageURI in non-workspaces.
-	//- Add StatusBar functionality. a check on the buttom x when error, check when no error, loading when analysing.
-		//+ tooltip info
-	//- enhance icon.
+	//- Fix Status bar icons
 	//- Finanlly, publish the extension.
 	//- Add composer support and extensions support.
 
 export async function activate(context: vscode.ExtensionContext) {
-
-	
 	await phpStanService.initPhpStanAsync(context, statusBarService);
 
 	const analyseDisposable = vscode.commands.registerCommand('php-stan.analyse', () => {
