@@ -1,24 +1,7 @@
 import * as vscode from "vscode";
 import { exec, execSync } from "child_process";
 import { ExtensionConfigurations } from "../constants/configurationEnum";
-import { IErrorMessage } from "../interfaces/errorOutputInterface";
-import { stat } from "fs";
 import { LoggingService } from "../services/loggingService";
-
-// export function showRana(title: string, cancellable: boolean = true, timeInSec = 10) {
-//   vscode.window.withProgress(
-//     {
-//       location: vscode.ProgressLocation.Notification,
-//       title: title,
-//       cancellable: cancellable,
-//     },
-//     async (progress, token) => {
-//       for (let i = 0; i < 10; i++) {
-//         setTimeout(() => progress.report({ increment: i * 10 }), 3 * 1000);
-//       }
-//     }
-//   );
-// }
 
 const config = vscode.workspace.getConfiguration("php-stan");
 
@@ -28,7 +11,22 @@ export function getConfiguration<T>(
   return config.get<T>(configuration);
 }
 
-export function showRanooon(
+export function showProgressMessageV2(title: string, cancellable: boolean = true, timeInSec = 10) {
+  vscode.window.withProgress(
+    {
+      location: vscode.ProgressLocation.Notification,
+      title: title,
+      cancellable: cancellable,
+    },
+    async (progress, token) => {
+      for (let i = 0; i < 10; i++) {
+        setTimeout(() => progress.report({ increment: i * 10 }), 3 * 1000);
+      }
+    }
+  );
+}
+
+export function showProgressMessage(
   message: string,
   duration: number = 1000,
   cancellable: boolean = true

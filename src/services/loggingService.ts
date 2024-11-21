@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
 
-/**
- * Logging service for PHPStan extension.
- */
 export class LoggingService {
     private static _instance: LoggingService;
     private outputChannel: vscode.LogOutputChannel;
@@ -19,18 +16,22 @@ export class LoggingService {
         return LoggingService._instance;
     }
 
+    public static show(): void {
+        this.instance.outputChannel.show();
+    }
+
     public static log(message: string, ...args: any[]): void {
-        this.instance.outputChannel.info(`${message}`, ...args);
+        this.instance.outputChannel.info(`${message}`);
         console.log(`PHPStan: ${message}`, ...args);
     }
 
     public static warn(message: string, ...args: any[]): void {
-        this.instance.outputChannel.warn(`${message}`, ...args);
+        this.instance.outputChannel.warn(`${message}`);
         console.warn(`PHPStan: ${message}`, ...args);
     }
 
     public static error(message: string, ...args: any[]): void {
-        this.instance.outputChannel.error(`${message}`, ...args);
+        this.instance.outputChannel.error(`${message}`);
         console.error(`PHPStan: ${message}`, ...args);
     }
 }

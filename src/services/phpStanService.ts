@@ -44,16 +44,20 @@ export class PhpStanService {
     statusBarService: StatusBarService,
   ): Promise<void> {
     LoggingService.log("Initialising PHP Stan ...");
+    this.statusBarService = statusBarService;
+
     const disposables: vscode.Disposable[] = [];
     this.diagCollection = vscode.languages.createDiagnosticCollection('PHPStanDiagnostics');
     this.storagePath = context.storageUri!; //TODO: will this work in non-workspaces? and also, is this different for each workspace? this is fucked.
-    
+
     const isValid = this.phpService.checkPhpVersion();
     if (!isValid) return; 
 
     this.phpStanVersion = context.globalState.get<string>(GlobalStateEnum.PHP_STAN_VERSION) ?? "";
     await this.downloadLatestPharAsync(this.phpStanPath);
     context.globalState.update(GlobalStateEnum.PHP_STAN_VERSION, this.phpStanVersion);
+    
+    this.statusBarService.initStatusBar(context, this.phpStanVersion);
 
     const analysisDisposable = this.setupAnalysisListner();
     disposables.push(...analysisDisposable);
@@ -107,10 +111,12 @@ export class PhpStanService {
 
   private onAnalysisError(output: string) {
     const errorOutput = JSON.parse(output) as IErrorOutput;
+    LoggingService.log('Analysis Output', errorOutput);
     for (const [key, value] of Object.entries(errorOutput.files)) {
       const diangostics = this.buildDiagnosticsFromOutput(value.messages);
       addDiagnosticsToFile(this.diagCollection, key, diangostics);
     }
+    this.statusBarService.setErrorState(errorOutput);
   }
 
   private setupAnalysisListner(): vscode.Disposable[] {
@@ -122,6 +128,7 @@ export class PhpStanService {
   }
 
   private analyseDocument(document: vscode.TextDocument) {
+    this.statusBarService.setLoadingState();
     const analyseScope = getConfiguration<AnalysisScope>(
       ExtensionConfigurations.ANALYSIS_SCOPE
     );
@@ -142,7 +149,9 @@ export class PhpStanService {
   }
 
   private onAnalysisSuccess(output: string) {
-    showInfoMessage(`Analysis completed successfully ${output}`);
+    LoggingService.log(`Analysis completed successfully.`);
+    this.statusBarService.setSuccessState();
+    this.diagCollection.clear();
   }
 
   private onConfigurationChange(): vscode.Disposable {
@@ -164,8 +173,10 @@ export class PhpStanService {
       const diagnostic = new vscode.Diagnostic(
         range,
         replaceTokens(m.message), //TODO: I think this is a bug and needs only be done for the last error.
-        vscode.DiagnosticSeverity.Error
+        vscode.DiagnosticSeverity.Error,
       );
+
+      diagnostic.source = 'phpstan';
 
       return diagnostic;
     });
