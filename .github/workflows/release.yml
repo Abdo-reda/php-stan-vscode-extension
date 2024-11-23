@@ -24,13 +24,14 @@ jobs:
       run: npm run package
 
     - name: Extract version from package.json
-      uses: nyaa8/package-version@v1
+      uses: dutscher/read-package-json-endpoint-actions@v1.33.7
+      id: package-json-endpoint
 
     - name: Upload VSIX artifact
       uses: actions/upload-artifact@v4
       with:
         name: php-stan-vscode-extension
-        path: ./build/php-stan-${{ env.PACKAGE_VERSION  }}.vsix
+        path: ./build/php-stan-${{ steps.package-json-endpoint.outputs.endpoint  }}.vsix
 
   release:
     name: Create GitHub Release
@@ -42,6 +43,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: php-stan-vscode-extension
+
+    - name: Extract version from package.json
+      uses: dutscher/read-package-json-endpoint-actions@v1.33.7
+      id: package-json-endpoint
     
     - name: Create GitHub Release
       id: create_release
@@ -49,8 +54,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ env.PACKAGE_VERSION  }} 
-        release_name: Release ${{ env.PACKAGE_VERSION  }}
+        tag_name: ${{ steps.package-json-endpoint.outputs.endpoint  }} 
+        release_name: Release ${{ steps.package-json-endpoint.outputs.endpoint  }}
         draft: false
         prerelease: false
     
