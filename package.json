@@ -96,7 +96,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "package": "vsce package --out build/",
+    "package": "mkdir -p build && vsce package --out build/",
     "publish": "vsce publish"
   },
   "devDependencies": {
