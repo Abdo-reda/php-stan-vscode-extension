@@ -36,37 +36,29 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
-    - name: Download VSIX artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: php-stan-vscode-extension
-
     - name: Checkout repository
       uses: actions/checkout@v4
-      
+
     - name: Extract version from package.json
       uses: nyaa8/package-version@v1
     
     - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: ${{ env.PACKAGE_VERSION  }} 
-        release_name: Release ${{ env.PACKAGE_VERSION  }}
-        draft: false
-        prerelease: false
-    
-    - name: Upload VSIX to Release
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./php-stan-vscode-extension/php-stan-vscode-extension
-        asset_name: php-stan-vscode-extension
-        asset_content_type: application/octet-stream
+        artifacts: "php-stan-vscode-extension"
+        tag: ${{ env.PACKAGE_VERSION  }}
+        generateReleaseNotes: true
 
+      # id: create_release
+      # uses: actions/create-release@v1
+      # env:
+      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # with:
+      #   tag_name: ${{ env.PACKAGE_VERSION  }} 
+      #   release_name: Release ${{ env.PACKAGE_VERSION  }}
+      #   draft: false
+      #   prerelease: false
