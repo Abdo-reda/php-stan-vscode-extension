@@ -49,7 +49,7 @@ jobs:
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "php-stan-vscode-extension.vsix"
+        artifacts: "php-stan-vscode-extension.*"
         tag: ${{ env.PACKAGE_VERSION  }}
         name: "${{ env.PACKAGE_VERSION  }} Release"
         generateReleaseNotes: true
@@ -83,4 +83,4 @@ jobs:
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
         run: |
-          vsce publish ${{ env.PACKAGE_VERSION }} --packagePath ./php-stan-${{ env.PACKAGE_VERSION }}.vsix --token $VSCE_TOKEN --no-update-package-json
+          vsce publish ${{ env.PACKAGE_VERSION }} --packagePath ./php-stan-${{ env.PACKAGE_VERSION }}.vsix --pat $VSCE_TOKEN --no-update-package-json
