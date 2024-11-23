@@ -3,7 +3,11 @@
   "displayName": "php-stan",
   "publisher": "nopoint",
   "description": "Analyse your php code instantly, and catch errors before they happen.",
-  "version": "0.8.6",
+  "version": "0.8.7",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Abdo-reda/php-stan-vscode-extension"
+  },
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -92,7 +96,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
     "test": "vscode-test",
-    "package": "vsce package --out build/"
+    "package": "vsce package --out build/",
+    "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.9",
