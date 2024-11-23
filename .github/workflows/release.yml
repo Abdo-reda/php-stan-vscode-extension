@@ -49,9 +49,38 @@ jobs:
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "php-stan-vscode-extension/php-stan-vscode-extension"
+        artifacts: "php-stan-vscode-extension.vsix"
         tag: ${{ env.PACKAGE_VERSION  }}
         name: "${{ env.PACKAGE_VERSION  }} Release"
         generateReleaseNotes: true
         allowUpdates: true
         replacesArtifacts: true
+
+  publish:
+    name: Publish to VSCode Marketplace
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+  
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+  
+      - name: Install vsce
+        run: npm install -g vsce
+
+      - name: Extract version from package.json
+        uses: nyaa8/package-version@v1
+  
+      - name: Download VSIX artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: php-stan-vscode-extension
+
+      - name: Publish to VSCode Marketplace
+        env:
+          VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
+        run: |
+          vsce publish ${{ env.PACKAGE_VERSION }} --packagePath ./php-stan-${{ env.PACKAGE_VERSION }}.vsix --token $VSCE_TOKEN --no-update-package-json
