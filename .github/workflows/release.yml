@@ -24,14 +24,13 @@ jobs:
       run: npm run package
 
     - name: Extract version from package.json
-      uses: krstphrrr/package-json-version-reader@v1
-      id: package-version
+      uses: rexdefuror/read-package-json@v1.0.5
 
     - name: Upload VSIX artifact
       uses: actions/upload-artifact@v4
       with:
         name: php-stan-vscode-extension
-        path: ./build/php-stan-${{ steps.package-version.outputs.version  }}.vsix
+        path: ./build/php-stan-${{ env.PACKAGE_VERSION  }}.vsix
 
   release:
     name: Create GitHub Release
@@ -45,8 +44,7 @@ jobs:
         name: php-stan-vscode-extension
 
     - name: Extract version from package.json
-      uses: krstphrrr/package-json-version-reader@v1
-      id: package-version
+      uses: rexdefuror/read-package-json@v1.0.5
     
     - name: Create GitHub Release
       id: create_release
@@ -54,8 +52,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ steps.package-version.outputs.version  }} 
-        release_name: Release ${{ steps.package-version.outputs.version  }}
+        tag_name: ${{ env.PACKAGE_VERSION  }} 
+        release_name: Release ${{ env.PACKAGE_VERSION  }}
         draft: false
         prerelease: false
     
