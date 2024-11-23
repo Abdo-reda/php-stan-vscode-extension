@@ -49,16 +49,9 @@ jobs:
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "php-stan-vscode-extension"
+        artifacts: "php-stan-vscode-extension/php-stan-vscode-extension"
         tag: ${{ env.PACKAGE_VERSION  }}
+        name: "${{ env.PACKAGE_VERSION  }} Release"
         generateReleaseNotes: true
-
-      # id: create_release
-      # uses: actions/create-release@v1
-      # env:
-      #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      # with:
-      #   tag_name: ${{ env.PACKAGE_VERSION  }} 
-      #   release_name: Release ${{ env.PACKAGE_VERSION  }}
-      #   draft: false
-      #   prerelease: false
+        allowUpdates: true
+        replacesArtifacts: true
