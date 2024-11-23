@@ -3,14 +3,16 @@
   "displayName": "php-stan",
   "publisher": "nopoint",
   "description": "Analyse your php code instantly, and catch errors before they happen.",
-  "version": "0.8.0",
+  "version": "0.8.6",
   "engines": {
     "vscode": "^1.95.0"
   },
   "categories": [
     "Other"
   ],
-  "activationEvents": ["onLanguage:php"],
+  "activationEvents": [
+    "onLanguage:php"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -22,11 +24,6 @@
     "configuration": {
       "title": "PHPStan",
       "properties": {
-        "php-stan.phpVersion": {
-          "type": "null",
-          "default": "7.2.0",
-          "markdownDescription": "PHP Version used to run php-stan. The minimum version required is 7.2.0. [Reference](https://phpstan.org/user-guide/getting-started)"
-        },
         "php-stan.binary": {
           "type": "string",
           "enum": [
@@ -68,21 +65,21 @@
       "php-stan-default": {
         "description": "PHPStan Default Icon",
         "default": {
-          "fontPath": "./assets/phpStanIconsV2.woff",
+          "fontPath": "./assets/phpStanIcons.woff",
           "fontCharacter": "\\E001"
         }
       },
       "php-stan-success": {
         "description": "PHPStan Success Icon",
         "default": {
-          "fontPath": "./assets/phpStanIconsV2.woff",
+          "fontPath": "./assets/phpStanIcons.woff",
           "fontCharacter": "\\E002"
         }
       },
       "php-stan-error": {
         "description": "PHPStan Error Icon",
         "default": {
-          "fontPath": "./assets/phpStanIconsV2.woff",
+          "fontPath": "./assets/phpStanIcons.woff",
           "fontCharacter": "\\E003"
         }
       }
@@ -94,17 +91,19 @@
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "package": "vsce package --out build/"
   },
   "devDependencies": {
-    "@types/vscode": "^1.95.0",
     "@types/mocha": "^10.0.9",
     "@types/node": "20.x",
+    "@types/vscode": "^1.95.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.7.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
     "eslint": "^9.13.0",
     "typescript": "^5.6.3",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/vsce": "^3.2.1"
   }
 }

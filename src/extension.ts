@@ -7,9 +7,9 @@ const statusBarService = new StatusBarService();
 const phpStanService = new PhpStanService();
 
 //TODO:
-	//- Test the storageURI in non-workspaces.
-	//- Fix Status bar icons
-	//- Finanlly, publish the extension.
+	//- Fix Status bar icons //could still be improved.
+	//- Finanlly, publish the extension
+		//- Update readme (add screenshots)
 	//- Add composer support and extensions support.
 
 export async function activate(context: vscode.ExtensionContext) {

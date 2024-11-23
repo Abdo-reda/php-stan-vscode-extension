@@ -16,13 +16,13 @@ export class StatusBarService {
         this.successColor = new vscode.ThemeColor('notebookStatusSuccessIcon.foreground');
     }
 
-    public initStatusBar(context: vscode.ExtensionContext, phpStanVersion: string): void 
+    public initStatusBar(phpStanVersion: string): vscode.StatusBarItem 
     {
         this.phpStanVersion = phpStanVersion;
-        context.subscriptions.push(this.statusBar);
         this.setDefaultState();
         this.setDefaultCommand();
         this.statusBar.show();
+        return this.statusBar;
     }
     
     private setDefaultCommand(): void 

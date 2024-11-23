@@ -11,7 +11,6 @@ import {
 import {
   addDiagnosticsToFile,
   fileExistsAsync,
-  getActiveDirectory,
   getActiveDocument,
   getConfiguration,
   runCommandInBackground,
@@ -31,8 +30,10 @@ export class PhpStanService {
   private storagePath: vscode.Uri = vscode.Uri.file("");
   private diagCollection!: vscode.DiagnosticCollection;
   private phpStanVersion = "";
-  private analyseOn = AnalysisOn.ON_SAVE;
   private statusBarService!: StatusBarService; //maybe assign in constructor.
+  private analyseOn = AnalysisOn.ON_SAVE;
+  private analysisLevel: number = 5;
+  private analysisScope: AnalysisScope = AnalysisScope.DIRECTORY;
 
   constructor() {
     this.onAnalysisError = this.onAnalysisError.bind(this);
@@ -48,7 +49,7 @@ export class PhpStanService {
 
     const disposables: vscode.Disposable[] = [];
     this.diagCollection = vscode.languages.createDiagnosticCollection('PHPStanDiagnostics');
-    this.storagePath = context.storageUri!; //TODO: will this work in non-workspaces? and also, is this different for each workspace? this is fucked.
+    this.storagePath = context.extensionUri; 
 
     const isValid = this.phpService.checkPhpVersion();
     if (!isValid) return; 
@@ -57,7 +58,7 @@ export class PhpStanService {
     await this.downloadLatestPharAsync(this.phpStanPath);
     context.globalState.update(GlobalStateEnum.PHP_STAN_VERSION, this.phpStanVersion);
     
-    this.statusBarService.initStatusBar(context, this.phpStanVersion);
+    const statusBar = this.statusBarService.initStatusBar(this.phpStanVersion);
 
     const analysisDisposable = this.setupAnalysisListner();
     disposables.push(...analysisDisposable);
@@ -65,7 +66,7 @@ export class PhpStanService {
     const configurationDisposable = this.onConfigurationChange();
     disposables.push(configurationDisposable);
 
-    context.subscriptions.push(this.diagCollection, ...disposables);
+    context.subscriptions.push(this.diagCollection, ...disposables, statusBar);
 
     this.analyseActiveDocument();
   }
@@ -77,12 +78,11 @@ export class PhpStanService {
   }
 
   private analysePath(analysisPath: string) {
-    const level = getConfiguration<number>(ExtensionConfigurations.LEVEL);
     const dir = path.dirname(analysisPath);
     const base = path.basename(analysisPath);
-    LoggingService.log(`Analysing ${dir} ${base}, Level ${level}`);
+    LoggingService.log(`Analysing ${dir} ${base}, Level ${this.analysisLevel}`);
     runCommandInBackground(
-      `php ${this.phpStanPath.fsPath} analyse ${base} -l ${level} --no-progress --error-format=json`,
+      `php ${this.phpStanPath.fsPath} analyse ${base} -l ${this.analysisLevel} --no-progress --error-format=json`,
       this.onAnalysisError,
       this.onAnalysisSuccess,
       dir
@@ -95,16 +95,21 @@ export class PhpStanService {
 
   async downloadLatestPharAsync(filePath: vscode.Uri): Promise<void> {
     const exists = await fileExistsAsync(filePath);
-    if (exists && this.phpStanVersion) {
-      LoggingService.log(`Found PHPStan version ${this.phpStanVersion}`);
+    const latestRelease = await this.githubService.getPhpStanLatestReleaseAsync();
+    if (exists && this.phpStanVersion === latestRelease.tag_name) {
+      LoggingService.log(`Found Existing PHPStan version ${this.phpStanVersion}`);
       return;
     }
 
+    if (this.phpStanVersion !== latestRelease.tag_name) {
+      LoggingService.log(`Found newer PHPStan version ${latestRelease.tag_name}, downloading ...`);
+    }
+
     const release = await this.githubService.downloadLatestReleaseAsync();
-    const arrayBuffer = await release.file.arrayBuffer();
+    const arrayBuffer = await release.arrayBuffer();
     const uint8Array = new Uint8Array(arrayBuffer);
     await vscode.workspace.fs.writeFile(filePath, uint8Array);
-    this.phpStanVersion = release.version;
+    this.phpStanVersion = latestRelease.tag_name;
     showInfoMessage(`Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
     LoggingService.log(`Successfully downloaded phpStan ${this.phpStanVersion} to ${filePath.fsPath}`);
   }
@@ -120,7 +125,9 @@ export class PhpStanService {
   }
 
   private setupAnalysisListner(): vscode.Disposable[] {
+    this.analysisLevel = getConfiguration<number>(ExtensionConfigurations.LEVEL) ?? 5;
     this.analyseOn = getConfiguration<AnalysisOn>(ExtensionConfigurations.ANALYSIS_ON) ?? AnalysisOn.ON_SAVE;
+    this.analysisScope = getConfiguration<AnalysisScope>(ExtensionConfigurations.ANALYSIS_SCOPE) ?? AnalysisScope.DIRECTORY;
     const disposables: vscode.Disposable[] = [];
     disposables.push(this.setupOnChangeListener());
     disposables.push(this.setupOnSaveListener());
@@ -129,20 +136,18 @@ export class PhpStanService {
 
   private analyseDocument(document: vscode.TextDocument) {
     this.statusBarService.setLoadingState();
-    const analyseScope = getConfiguration<AnalysisScope>(
-      ExtensionConfigurations.ANALYSIS_SCOPE
-    );
+    
 
     const documentURI = document.uri;
     const workspace = vscode.workspace.getWorkspaceFolder(documentURI);
 
-    if (analyseScope === AnalysisScope.FILE) {
+    if (this.analysisScope === AnalysisScope.FILE) {
       LoggingService.log("Analysing File Scope");
       this.analysePath(documentURI.fsPath);
-    } else if (analyseScope === AnalysisScope.DIRECTORY || !workspace) {
+    } else if (this.analysisScope === AnalysisScope.DIRECTORY || !workspace) {
       LoggingService.log("Analysing Directory Scope");
       this.analysePath(vscode.Uri.joinPath(documentURI, '..').fsPath);
-    } else if (analyseScope === AnalysisScope.WORKSPACE && workspace) {
+    } else if (this.analysisScope === AnalysisScope.WORKSPACE && workspace) {
       LoggingService.log("Analysing Workspace Scope");
       this.analysePath(workspace.uri.fsPath);
     }
@@ -159,6 +164,14 @@ export class PhpStanService {
       if (event.affectsConfiguration(ExtensionConfigurations.ANALYSIS_ON)) {
         LoggingService.log("AnalysisOn Configuration Changed.");
         this.analyseOn = getConfiguration<AnalysisOn>(ExtensionConfigurations.ANALYSIS_ON) ?? AnalysisOn.ON_SAVE;
+      }
+      if (event.affectsConfiguration(ExtensionConfigurations.LEVEL)) {
+        LoggingService.log("Level Configuration Changed.");
+        this.analysisLevel = getConfiguration<number>(ExtensionConfigurations.LEVEL) ?? 5;
+      }
+      if (event.affectsConfiguration(ExtensionConfigurations.ANALYSIS_SCOPE)) {
+        LoggingService.log("AnalysisScope Configuration Changed.");
+        this.analysisScope = getConfiguration<AnalysisScope>(ExtensionConfigurations.ANALYSIS_SCOPE) ?? AnalysisScope.DIRECTORY;
       }
     });
   }
