@@ -41,7 +41,7 @@ jobs:
     - name: Download VSIX artifact
       uses: actions/download-artifact@v4
       with:
-        name: extension
+        name: php-stan-vscode-extension
     
     - name: Create GitHub Release
       id: create_release
@@ -60,7 +60,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./extension/extension.vsix
-        asset_name: extension.vsix
+        asset_path: ./php-stan-vscode-extension/php-stan-vscode-extension
+        asset_name: php-stan-vscode-extension
         asset_content_type: application/octet-stream
 
