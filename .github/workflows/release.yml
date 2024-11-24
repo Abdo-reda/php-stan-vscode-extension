@@ -21,6 +21,9 @@ jobs:
       run: npm install
 
     - name: Build the VSIX package
+      run: npm run build
+
+    - name: Build the VSIX package
       run: npm run package
 
     - name: Extract version from package.json
@@ -33,7 +36,7 @@ jobs:
         path: ./build/php-stan-${{ env.PACKAGE_VERSION  }}.vsix
 
   release:
-    name: Create GitHub Release
+    name: Release
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -45,11 +48,19 @@ jobs:
 
     - name: Extract version from package.json
       uses: nyaa8/package-version@v1
-    
+
+    - name: Download VSIX artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: php-stan-vscode-extension
+
+    - name: Verify files
+      run: ls
+
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "php-stan-${{ env.PACKAGE_VERSION }}.vsix"
+        artifacts: "php-stan-${{ env.PACKAGE_VERSION  }}.vsix"
         tag: ${{ env.PACKAGE_VERSION  }}
         name: "${{ env.PACKAGE_VERSION  }} Release"
         generateReleaseNotes: true
@@ -57,7 +68,7 @@ jobs:
         replacesArtifacts: true
 
   publish:
-    name: Publish to VSCode Marketplace
+    name: Publish
     needs: build
     runs-on: ubuntu-latest
 

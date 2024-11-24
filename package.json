@@ -1,7 +1,7 @@
 {
   "name": "php-stan",
-  "displayName": "php-stan",
-  "publisher": "nopoint",
+  "displayName": "PHPStan Plug-in.",
+  "publisher": "AbdoReda",
   "description": "Analyse your php code instantly, and catch errors before they happen.",
   "version": "0.8.7",
   "repository": {
@@ -90,8 +90,7 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "build": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src",
