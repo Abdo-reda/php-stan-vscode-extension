@@ -1,6 +1,7 @@
-# PHPStan
+# PHPStan Plugin
+![LOGO](./resources/images/logo.png)
 
-**PHPStan extension** is an extension for the popular static analysis tool [PHPStan](https://phpstan.org/). 
+**PHPStan extension** is an extension for the popular static analysis tool [PHPStan](https://phpstan.org/). Its suppose to be a plug & play extension, no need for any complex setup or configuration.
 
 Instead of having to manually install PHPStan and run it on your project everytime you make a change, this extension runs **PHPStan behind the scenes automatically**. 
 It outputs the errors and displays them in your file. It also display a statusbar with a summary. This in theory, should result in faster workflows. 
@@ -9,7 +10,9 @@ This is **NOT an official extension from PHPStan**, its more of a passion/learni
 
 ## Features
 
-* Runs PHPStan analysis ... screen shots will be added later.
+* Runs PHPStan analysis in the background providing errors and diganostics.
+
+![Demo Animation](./resources/images/screenshots.gif)
 
 ## Why Though?
 
@@ -31,6 +34,8 @@ Moreover, I found it later that are already [extensions](https://marketplace.vis
 ## Extension Settings
 
 * `php-stan.binary`: **PHPStan binary approach** that gets executed. Only Phar files are supported for now, later on composer support will be added.
+
+* `php-stan.level`: **PHPStan Analysis Level**. This is the level used for analysis. Possible value are from 0-9 inclusive. By default its set to 5.
 
 * `php-stan.analysisOn`: Determines the **trigger** for running the analysis, By default its set to `onSave` but it can be changed to `onChange` or `manual`.
 
