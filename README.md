@@ -1,5 +1,5 @@
 # PHPStan Plugin
-![LOGO](./resources/images/logo.png)
+![LOGO](./assets/logo.png)
 
 **PHPStan extension** is an extension for the popular static analysis tool [PHPStan](https://phpstan.org/). Its suppose to be a plug & play extension, no need for any complex setup or configuration.
 
