@@ -12,7 +12,9 @@ This is **NOT an official extension from PHPStan**, its more of a passion/learni
 
 * Runs PHPStan analysis in the background providing errors and diganostics.
 
-![Demo Animation](./resources/images/screenshots.gif)
+<video>
+    <source src="./resources/images/screenshots.webm" type="video/webm">
+</video>
 
 ## Why Though?
 
