@@ -33,7 +33,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: php-stan-vscode-extension
-        path: ./build/php-stan-${{ env.PACKAGE_VERSION  }}.vsix
+        path: ./build/php-stan-plugin-${{ env.PACKAGE_VERSION  }}.vsix
 
   release:
     name: Release
@@ -54,13 +54,10 @@ jobs:
       with:
         name: php-stan-vscode-extension
 
-    - name: Verify files
-      run: ls
-
     - name: Create GitHub Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "php-stan-${{ env.PACKAGE_VERSION  }}.vsix"
+        artifacts: "php-stan-plugin-${{ env.PACKAGE_VERSION  }}.vsix"
         tag: ${{ env.PACKAGE_VERSION  }}
         name: "${{ env.PACKAGE_VERSION  }} Release"
         generateReleaseNotes: true
@@ -94,4 +91,4 @@ jobs:
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
         run: |
-          vsce publish ${{ env.PACKAGE_VERSION }} --pat $VSCE_TOKEN --no-update-package-json
+          vsce publish --packagePath php-stan-plugin-${{ env.PACKAGE_VERSION  }}.vsix --pat $VSCE_TOKEN --no-update-package-json
