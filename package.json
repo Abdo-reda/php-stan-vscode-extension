@@ -1,5 +1,5 @@
 {
-  "name": "php-stan",
+  "name": "php-stan-plugin",
   "displayName": "PHPStan Plug-in.",
   "publisher": "AbdoReda",
   "description": "Analyse your php code instantly, and catch errors before they happen.",

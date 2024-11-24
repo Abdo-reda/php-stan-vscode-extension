@@ -20,10 +20,10 @@ jobs:
     - name: Install dependencies
       run: npm install
 
-    - name: Build the VSIX package
+    - name: Build/Compile the extension
       run: npm run build
 
-    - name: Build the VSIX package
+    - name: Package the VSIX package
       run: npm run package
 
     - name: Extract version from package.json
