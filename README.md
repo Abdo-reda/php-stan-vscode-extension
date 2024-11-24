@@ -48,7 +48,7 @@ This extension is still a **work in progress**, errors may and will occur.
 
 * Initial release of PHPStanExtension.
 
-## POSSIBLE ENHANCEMENTS?:
+## POSSIBLE ENHANCEMENTS?
 
 - [ ] Composer & Extensions Support.
 - [ ] Setting to specify php binary.

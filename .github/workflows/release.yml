@@ -91,4 +91,4 @@ jobs:
         env:
           VSCE_TOKEN: ${{ secrets.VSCE_TOKEN }}
         run: |
-          vsce publish --packagePath php-stan-plugin-${{ env.PACKAGE_VERSION  }}.vsix --pat $VSCE_TOKEN --no-update-package-json
+          vsce publish --packagePath php-stan-plugin-${{ env.PACKAGE_VERSION  }}.vsix --pat $VSCE_TOKEN --no-update-package-json --skip-duplicate
