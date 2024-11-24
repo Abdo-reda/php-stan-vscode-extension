@@ -2,7 +2,7 @@
   "name": "php-stan-plugin",
   "displayName": "PHPStan Plug-in",
   "publisher": "AbdoReda",
-  "description": "Analyse your php code instantly utilizing the power of PHPStan, and catch errors before they happen.",
+  "description": "Analyse your php code instantly, catch errors before they happen.",
   "version": "0.8.7",
   "icon": "assets/logo.png",
   "repository": {
