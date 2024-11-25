@@ -1,7 +1,7 @@
 # PHPStan Plugin
 ![LOGO](./assets/logo.png)
 
-**PHPStan extension** is an extension for the popular static analysis tool [PHPStan](https://phpstan.org/). Its suppose to be a plug & play extension, no need for any complex setup or configuration.
+**PHPStan Plugin** is an extension for the popular static analysis tool [PHPStan](https://phpstan.org/). Its suppose to be a plug & play extension, no need for any complex setup or configuration.
 
 Instead of having to manually install PHPStan and run it on your project everytime you make a change, this extension runs **PHPStan behind the scenes automatically**. 
 It outputs the errors and displays them in your file. It also display a statusbar with a summary. This in theory, should result in faster workflows. 
@@ -12,7 +12,7 @@ This is **NOT an official extension from PHPStan**, its more of a passion/learni
 
 * Runs PHPStan analysis in the background providing errors and diganostics.
 
-![Demo Video](./resources/images/screenshots.png)
+![Demo Video](https://github.com/Abdo-reda/php-stan-vscode-extension/blob/main/resources/images/screenshots.png?raw=true)
 
 ## Why Though?
 
@@ -53,7 +53,7 @@ This extension is still a **work in progress**, errors may and will occur.
 
 * Initial release of PHPStanExtension.
 
-## POSSIBLE ENHANCEMENTS?
+## Possible Enhancements ?
 
 - [ ] Composer & Extensions Support.
 - [ ] Setting to specify php binary.

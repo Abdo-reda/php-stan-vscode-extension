@@ -6,12 +6,6 @@ import { LoggingService } from './services/loggingService';
 const statusBarService = new StatusBarService();
 const phpStanService = new PhpStanService();
 
-//TODO:
-	//- Fix Status bar icons //could still be improved.
-	//- Finanlly, publish the extension
-		//- Update readme (add screenshots)
-	//- Add composer support and extensions support.
-
 export async function activate(context: vscode.ExtensionContext) {
 	await phpStanService.initPhpStanAsync(context, statusBarService);
 

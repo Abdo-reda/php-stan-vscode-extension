@@ -13,8 +13,10 @@
     "vscode": "^1.95.0"
   },
   "categories": [
-    "Other"
+    "Programming Languages"
   ],
+  "keywords": ["PHP", "PHPStan", "errors", "static analysis"],
+  "license": "SEE LICENSE IN LICENSE",
   "activationEvents": [
     "onLanguage:php"
   ],
