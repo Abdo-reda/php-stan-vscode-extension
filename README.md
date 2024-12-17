@@ -20,7 +20,7 @@ You might be wondering why use this at all? one can use other extensions that be
 
 Well, you are probably right, this is a very niche extension and made solely for learning purposes.
 
-Moreover, I found it later that are already [extensions](https://marketplace.visualstudio.com/search?term=phpstan&target=VSCode&category=All%20categories&sortBy=Relevance) that do the same thing and maybe even better. Check them out!
+Moreover, I found out later that are already [extensions](https://marketplace.visualstudio.com/search?term=phpstan&target=VSCode&category=All%20categories&sortBy=Relevance) that do the same thing and maybe even better. Check them out!
 - [SanderRonde Extension](https://marketplace.visualstudio.com/items?itemName=SanderRonde.phpstan-vscode)
 - [Swordev Extension](https://marketplace.visualstudio.com/items?itemName=swordev.phpstan) 
 
